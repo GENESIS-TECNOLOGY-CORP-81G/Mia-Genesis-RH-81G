@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>MÍA GÉNESIS - Panel de Control HR</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #0f172a;
+            color: #f8fafc;
+            font-family: system-ui, -apple-system, sans-serif;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            justify-content: space-between;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .top-engines {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .engine-btn {
+            background-color: #0284c7;
+            color: #ffffff;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+
+        .engine-btn:hover {
+            background-color: #0369a1;
+        }
+
+        .chat-container {
+            background-color: #1e293b;
+            border-radius: 8px;
+            padding: 20px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border: 1px solid #334155;
+        }
+
+        .response-box {
+            margin-bottom: 20px;
+        }
+
+        .response-box h3 {
+            margin-top: 0;
+            color: #38bdf8;
+        }
+
+        .input-bar {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            background-color: #0f172a;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #334155;
+        }
+
+        .input-bar input {
+            flex-grow: 1;
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .action-btn {
+            background-color: #0284c7;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .action-btn:hover {
+            background-color: #0369a1;
+        }
+
+        .voice-btn {
+            background-color: #334155;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .voice-btn.listening {
+            background-color: #dc2626;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="top-engines">
+        <button class="engine-btn" onclick="activarMotor('Finiquitos LFT')">Finiquitos LFT</button>
+        <button class="engine-btn" onclick="activarMotor('IMSS / Infonavit')">IMSS / Infonavit</button>
+        <button class="engine-btn" onclick="activarMotor('Vales Despensa')">Vales Despensa</button>
+        <button class="engine-btn" onclick="activarMotor('Vacaciones')">Vacaciones</button>
+        <button class="engine-btn" onclick="activarMotor('Cálculo Fiscal')">Cálculo Fiscal</button>
+        <button class="engine-btn" onclick="activarMotor('Auditoría Documental')">Auditoría Documental</button>
+        <button class="engine-btn" onclick="activarMotor('Asistencia')">Asistencia</button>
+    </div>
+
+    <div class="chat-container">
+        <div class="response-box">
+            <h3>Mía Génesis:</h3>
+            <p id="output-text">Infraestructura local enlazada. Entorno soberano activo y operando bajo control de
+                administrador.</p>
+        </div>
+
+        <div class="input-bar">
+            <button class="voice-btn" id="mic-btn" onclick="toggleVoiceRecognition()"
+                title="Instrucciones por voz">🎤</button>
+            <input type="text" id="user-input" placeholder="Escribe tu instrucción o selecciona una acción...">
+            <button class="action-btn" onclick="enviarMensaje()">Enviar</button>
+        </div>
+    </div>
+
+    <script>
+        function activarMotor(nombreMotor) {
+            document.getElementById('output-text').innerText = `Motor seleccionado: ${nombreMotor}. Procesando localmente en el clúster.`;
+        }
+
+        function enviarMensaje() {
+            const texto = document.getElementById('user-input').value;
+            if (texto.trim() !== "") {
+                document.getElementById('output-text').innerText = `Procesamiento seguro: "${texto}"`;
+                document.getElementById('user-input').value = "";
+            }
+        }
+
+        let recognition;
+        let listening = false;
+
+        function toggleVoiceRecognition() {
+            const micBtn = document.getElementById('mic-btn');
+
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                alert('El navegador no soporta el reconocimiento de voz en este entorno.');
+                return;
+            }
+
+            if (!listening) {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                recognition = new SpeechRecognition();
+                recognition.lang = 'es-MX';
+                recognition.interimResults = false;
+                recognition.maxAlternatives = 1;
+
+                recognition.onstart = function () {
+                    listening = true;
+                    micBtn.classList.add('listening');
+                    document.getElementById('user-input').placeholder = "Escuchando comando...";
+                };
+
+                recognition.onresult = function (event) {
+                    const speechResult = event.results[0][0].transcript;
+                    document.getElementById('user-input').value = speechResult;
+                    enviarMensaje();
+                };
+
+                recognition.onerror = function (event) {
+                    detenerVoz();
+                };
+
+                recognition.onend = function () {
+                    detenerVoz();
+                };
+
+                recognition.start();
+            } else {
+                recognition.stop();
+                detenerVoz();
+            }
+        }
+
+        function detenerVoz() {
+            listening = false;
+            const micBtn = document.getElementById('mic-btn');
+            micBtn.classList.remove('listening');
+            document.getElementById('user-input').placeholder = "Escribe tu instrucción o selecciona una acción...";
+        }
+    </script>
+</body>
+
+</html>

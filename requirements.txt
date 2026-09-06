@@ -1,0 +1,9 @@
+API rápida
+uvicorn
+transformadores
+antorcha
+huggingface_hub
+python-dotenv
+pandas
+numpy
+openpyxl
