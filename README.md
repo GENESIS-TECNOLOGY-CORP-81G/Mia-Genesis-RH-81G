@@ -1,11 +1,4 @@
-# prueba rápida en Python
-python - <<'PYTHON'
-import os
-from huggingface_hub import HfApi
-api = HfApi(token=os.environ.get("HF_TOKEN"))
-print(api.upload_file(path_or_fileobj="README.md", path_in_repo="README.md", repo_id=os.environ.get("HF_REPO_ID"), repo_type="space"))
-PYTHON
----
+
 language:
 - es
 license: apache-2.0
