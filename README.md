@@ -1,20 +1,3 @@
-
-language:
-- es
-license: apache-2.0
-tags:
-- text-generation
-- resources-human
-- mia-genesis
-- qwen
-- enterprise-payroll
-- business-logic
-- audio
-- speech-recognition
-- tts
-- voice-cloning
----
-
 # MIA GÉNESIS - Ecosistema Integral de Inteligencia Artificial para Recursos Humanos
 
 Este repositorio centraliza y orquesta la infraestructura completa de **MIA GÉNESIS**, integrando el razonamiento normativo, la auditoría de nómina, la gestión documental y los motores neuronales de voz y audio.
