@@ -1,9 +1,3 @@
-API rápida
-uvicorn
-transformadores
-antorcha
-huggingface_hub
-python-dotenv
-pandas
-numpy
-openpyxl
+git add requirements.txt
+git commit -m "Corrige sintaxis en requirements.txt"
+git push origin main
