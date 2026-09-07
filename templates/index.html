@@ -1,221 +1,511 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MIA GÉNESIS - Ecosistema de Recursos Humanos</title>
+    <title>NÚCLEO CENTRAL - Panel de Control & Orquestador</title>
+    <!-- FontAwesome & Google Fonts -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+
     <style>
         :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --accent-color: #38bdf8;
-            --text-color: #f8fafc;
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --bg-card-hover: #334155;
+            --accent-primary: #3b82f6;
+            --accent-glow: rgba(59, 130, 246, 0.25);
+            --accent-voice: #ec4899;
+            --accent-voice-glow: rgba(236, 72, 153, 0.3);
+            --text-main: #f8fafc;
             --text-muted: #94a3b8;
             --border-color: #334155;
-            --btn-hover: #0ea5e9;
+            --success: #10b981;
+            --danger: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            padding: 20px;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
         }
 
-        .container {
-            width: 100%;
-            max-width: 900px;
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 30px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-        }
-
-        h1 {
-            font-size: 1.8rem;
-            margin-bottom: 10px;
-            color: var(--accent-color);
-            text-align: center;
-        }
-
-        .subtitle {
-            text-align: center;
+        /* Header de Autoría Protegida */
+        .protected-header {
+            background: linear-gradient(90deg, #1e1b4b 0%, #0f172a 100%);
+            border-bottom: 1px solid var(--border-color);
+            padding: 12px 24px;
+            font-size: 0.8rem;
             color: var(--text-muted);
-            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .protected-header strong {
+            color: var(--accent-primary);
+        }
+
+        .badge-sha {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Layout Main */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+            width: 100%;
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 24px;
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Secciones */
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title i {
+            color: var(--accent-primary);
+        }
+
+        .grid-engines {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 14px;
+            margin-bottom: 28px;
+        }
+
+        /* Tarjeta de Motor */
+        .card-engine {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-engine:hover {
+            background: var(--bg-card-hover);
+            transform: translateY(-2px);
+            border-color: var(--accent-primary);
+            box-shadow: 0 4px 20px var(--accent-glow);
+        }
+
+        .card-engine.voice-card:hover {
+            border-color: var(--accent-voice);
+            box-shadow: 0 4px 20px var(--accent-voice-glow);
+        }
+
+        .card-engine .engine-icon {
+            font-size: 1.4rem;
+            color: var(--accent-primary);
+        }
+
+        .card-engine.voice-card .engine-icon {
+            color: var(--accent-voice);
+        }
+
+        .card-engine .engine-name {
+            font-weight: 600;
             font-size: 0.95rem;
         }
 
-        .section {
-            margin-bottom: 25px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid var(--border-color);
+        .card-engine .engine-desc {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            line-height: 1.3;
         }
 
-        .section:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
-            padding-bottom: 0;
+        /* Sidebar - Consola y Subida */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
 
-        label {
-            display: block;
+        .panel-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        /* Dropzone Subida */
+        .upload-area {
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.2s;
+            background: rgba(15, 23, 42, 0.4);
+        }
+
+        .upload-area:hover {
+            border-color: var(--accent-primary);
+        }
+
+        .upload-area i {
+            font-size: 2rem;
+            color: var(--accent-primary);
             margin-bottom: 8px;
-            font-weight: 600;
         }
 
-        select, input[type="file"], button {
-            width: 100%;
+        .upload-area p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        /* Terminal Console */
+        .console-box {
+            background: #090d16;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 14px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: #38bdf8;
+            height: 320px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        /* Audio Player / Animación Génesis */
+        .voice-status {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(236, 72, 153, 0.1);
+            border: 1px solid rgba(236, 72, 153, 0.2);
             padding: 12px;
             border-radius: 8px;
-            border: 1px solid var(--border-color);
-            background-color: #0f172a;
-            color: var(--text-color);
-            font-size: 1rem;
-            box-sizing: border-box;
-            margin-bottom: 15px;
-        }
-
-        select:focus, input:focus {
-            outline: none;
-            border-color: var(--accent-color);
-        }
-
-        button {
-            background-color: var(--accent-color);
-            color: #0f172a;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.2s;
-            border: none;
-        }
-
-        button:hover {
-            background-color: var(--btn-hover);
-        }
-
-        .output-box {
-            background-color: #0b0f19;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 15px;
-            min-height: 150px;
-            max-height: 350px;
-            overflow-y: auto;
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 0.9rem;
-            white-space: pre-wrap;
-            color: #38bdf8;
-        }
-
-        .status-msg {
             margin-top: 10px;
-            font-size: 0.9rem;
-            color: var(--text-muted);
+        }
+
+        .wave-animation {
+            display: flex;
+            gap: 3px;
+            align-items: center;
+            height: 16px;
+        }
+
+        .wave-bar {
+            width: 3px;
+            height: 100%;
+            background: var(--accent-voice);
+            border-radius: 3px;
+            animation: wave 1s infinite ease-in-out;
+        }
+
+        .wave-bar:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .wave-bar:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes wave {
+
+            0%,
+            100% {
+                height: 4px;
+            }
+
+            50% {
+                height: 16px;
+            }
+        }
+
+        /* Overlay de Carga */
+        .loading-spinner {
+            display: none;
+            color: var(--accent-primary);
+            font-size: 0.85rem;
+            margin-top: 8px;
         }
     </style>
 </head>
+
 <body>
 
-    <div class="container">
-        <h1>MIA GÉNESIS - RH & Fiscal</h1>
-        <div class="subtitle">Ecosistema Integral de Inteligencia Artificial para Recursos Humanos</div>
-
-        <!-- Sección de Carga de Archivos -->
-        <div class="section">
-            <label for="archivoInput">Cargar Archivo de Datos / Nómina / Documento:</label>
-            <input type="file" id="archivoInput">
-            <button onclick="subirArchivo()">Subir Archivo al Servidor</button>
-            <div id="statusSubida" class="status-msg"></div>
+    <!-- Header Autoría Protegida -->
+    <div class="protected-header">
+        <div>
+            <strong>AUTORÍA PROTEGIDA:</strong> Felipe de Jesús López Vázquez |
+            <span>Director de Operaciones 2026</span>
         </div>
-
-        <!-- Sección de Ejecución de Motores -->
-        <div class="section">
-            <label for="motorSelect">Seleccionar Motor Operativo:</label>
-            <select id="motorSelect">
-                <option value="actualizacion_fiscal">Actualización Fiscal</option>
-                <option value="actualizacion_imss">Actualización IMSS</option>
-                <option value="asistencia">Asistencia</option>
-                <option value="documental">Documental</option>
-                <option value="documental_completo">Documental Completo</option>
-                <option value="finiquitos">Finiquitos</option>
-                <option value="fiscal">Fiscal</option>
-                <option value="fonacot">Fonacot</option>
-                <option value="imss_infonavit">IMSS e Infonavit</option>
-                <option value="incapacidades">Incapacidades</option>
-                <option value="infonavit">Infonavit</option>
-                <option value="nomina_ordinaria">Nómina Ordinaria</option>
-                <option value="pension_alimenticia">Pensión Alimenticia</option>
-                <option value="vacaciones">Vacaciones</option>
-                <option value="vales">Vales</option>
-                <option value="nucleo_central">Núcleo Central</option>
-            </select>
-            <button onclick="ejecutarMotor()">Ejecutar Motor Seleccionado</button>
-        </div>
-
-        <!-- Sección de Resultados -->
-        <div class="section">
-            <label>Consola de Resultados:</label>
-            <div id="resultadoConsola" class="output-box">Esperando ejecución de motores...</div>
+        <div class="badge-sha">
+            SHA-256: 82EA62A761CFA1B...74888
         </div>
     </div>
 
+    <div class="container">
+        <!-- Panel Principal de Motores -->
+        <main>
+            <!-- Módulos de Voz & Génesis -->
+            <div class="section-title">
+                <i class="fa-solid fa-microphone-lines"></i> Módulos de Voz & Génesis (TTS)
+            </div>
+            <div class="grid-engines">
+                <div class="card-engine voice-card" onclick="ejecutarMotor('nucleo_central_voz')">
+                    <i class="fa-solid fa-brain engine-icon"></i>
+                    <div class="engine-name">Núcleo Voz Génesis</div>
+                    <div class="engine-desc">Asistente vocal central con voz sintética Génesis.</div>
+                </div>
+
+                <div class="card-engine voice-card" onclick="ejecutarMotor('orquestador_voz')">
+                    <i class="fa-solid fa-diagram-project engine-icon"></i>
+                    <div class="engine-name">Orquestador Voz</div>
+                    <div class="engine-desc">Coordinador general de respuestas sintetizadas.</div>
+                </div>
+
+                <div class="card-engine voice-card" onclick="ejecutarMotor('prueba_voz')">
+                    <i class="fa-solid fa-volume-high engine-icon"></i>
+                    <div class="engine-name">Prueba de Voz</div>
+                    <div class="engine-desc">Verifica la salida de audio local y altavoz.</div>
+                </div>
+
+                <div class="card-engine voice-card" onclick="ejecutarMotor('descarga_voz')">
+                    <i class="fa-solid fa-cloud-arrow-down engine-icon"></i>
+                    <div class="engine-name">Descarga Archivo Voz</div>
+                    <div class="engine-desc">Genera y descarga el archivo de audio (.wav/.mp3).</div>
+                </div>
+            </div>
+
+            <!-- Módulos Nómina y Fiscal -->
+            <div class="section-title">
+                <i class="fa-solid fa-calculator"></i> Motores de Nómina & Fiscal
+            </div>
+            <div class="grid-engines">
+                <div class="card-engine" onclick="ejecutarMotor('nomina_ordinaria')">
+                    <i class="fa-solid fa-money-bill-wave engine-icon"></i>
+                    <div class="engine-name">Nómina Ordinaria</div>
+                    <div class="engine-desc">Cálculo general de percepciones y deducciones.</div>
+                </div>
+                <div class="card-engine" onclick="ejecutarMotor('fiscal')">
+                    <i class="fa-solid fa-building-columns engine-icon"></i>
+                    <div class="engine-name">Motor Fiscal</div>
+                    <div class="engine-desc">Ajustes y retenciones fiscales del ejercicio.</div>
+                </div>
+                <div class="card-engine" onclick="ejecutarMotor('finiquitos')">
+                    <i class="fa-solid fa-file-invoice-dollar engine-icon"></i>
+                    <div class="engine-name">Finiquitos</div>
+                    <div class="engine-desc">Liquidaciones y terminaciones laborales.</div>
+                </div>
+                <div class="card-engine" onclick="ejecutarMotor('vacaciones')">
+                    <i class="fa-solid fa-plane-departure engine-icon"></i>
+                    <div class="engine-name">Vacaciones</div>
+                    <div class="engine-desc">Cálculo de prima vacacional y saldos.</div>
+                </div>
+                <div class="card-engine" onclick="ejecutarMotor('pension_alimenticia')">
+                    <i class="fa-solid fa-scale-balanced engine-icon"></i>
+                    <div class="engine-name">Pensión Alimenticia</div>
+                    <div class="engine-desc">Descuentos por mandato judicial.</div>
+                </div>
+                <div class="card-engine" onclick="ejecutarMotor('vales')">
+                    <i class="fa-solid fa-credit-card engine-icon"></i>
+                    <div class="engine-name">Vales de Despensa</div>
+                    <div class="engine-desc">Asignación y dispersión de monederos.</div>
+                </div>
+            </div>
+
+            <!-- Asistencia & Seguridad Social -->
+            <div class="section-title">
+                <i class="fa-solid fa-users-gear"></i> Asistencia, IMSS & Créditos
+            </div>
+            <div class="grid-engines">
+                <div class="card-engine" onclick="ejecutarMotor('asistencia')">
+                    <i class="fa-solid fa-user-clock engine-icon"></i>
+                    <div class="engine-name">Asistencia</div>
+                    <div class="engine-desc">Control de incidencias y checadas.</div>
+                </div>
+                <div class="card-engine" onclick="ejecutarMotor('imss_infonavit')">
+                    <i class="fa-solid fa-hospital engine-icon"></i>
+                    <div class="engine-name">IMSS & Infonavit</div>
+                    <div class="engine-desc">Cuotas obtero-patronales y amortizaciones.</div>
+                </div>
+                <div class="card-engine" onclick="ejecutarMotor('incapacidades')">
+                    <i class="fa-solid fa-user-doctor engine-icon"></i>
+                    <div class="engine-name">Incapacidades</div>
+                    <div class="engine-desc">Registro y subsidios de salud.</div>
+                </div>
+                <div class="card-engine" onclick="ejecutarMotor('fonacot')">
+                    <i class="fa-solid fa-landmark engine-icon"></i>
+                    <div class="engine-name">Fonacot</div>
+                    <div class="engine-desc">Retenciones de créditos a trabajadores.</div>
+                </div>
+            </div>
+
+            <!-- Documental & Núcleo Central -->
+            <div class="section-title">
+                <i class="fa-solid fa-folder-tree"></i> Documental & Núcleo Central
+            </div>
+            <div class="grid-engines">
+                <div class="card-engine" onclick="ejecutarMotor('nucleo_central')">
+                    <i class="fa-solid fa-network-wired engine-icon"></i>
+                    <div class="engine-name">Núcleo Central</div>
+                    <div class="engine-desc">Procesamiento principal de datos backend.</div>
+                </div>
+                <div class="card-engine" onclick="ejecutarMotor('documental')">
+                    <i class="fa-solid fa-file-contract engine-icon"></i>
+                    <div class="engine-name">Motor Documental</div>
+                    <div class="engine-desc">Generación rápida de expedientes.</div>
+                </div>
+                <div class="card-engine" onclick="ejecutarMotor('documental_completo')">
+                    <i class="fa-solid fa-box-archive engine-icon"></i>
+                    <div class="engine-name">Documental Completo</div>
+                    <div class="engine-desc">Compilación masiva de contratos y cartas.</div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Sidebar Lateral (Archivos y Terminal) -->
+        <aside class="sidebar">
+            <!-- Carga de Archivos -->
+            <div class="panel-box">
+                <div class="section-title" style="margin-bottom: 10px;">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Cargar Archivo
+                </div>
+                <div class="upload-area" onclick="document.getElementById('inputArchivo').click()">
+                    <i class="fa-solid fa-file-csv"></i>
+                    <p>Haz clic o arrastra un archivo (.csv, .xlsx, .txt)</p>
+                </div>
+                <input type="file" id="inputArchivo" onchange="subirArchivo()">
+                <div id="subiendoSpinner" class="loading-spinner">
+                    <i class="fa-solid fa-spinner fa-spin"></i> Subiendo archivo al servidor...
+                </div>
+            </div>
+
+            <!-- Consola de Salida -->
+            <div class="panel-box" style="flex: 1; display: flex; flex-direction: column;">
+                <div class="section-title" style="margin-bottom: 10px;">
+                    <i class="fa-solid fa-terminal"></i> Terminal de Salida
+                </div>
+                <div class="console-box" id="consola">>> Consola lista. Selecciona un motor para ejecutar...</div>
+            </div>
+
+            <!-- Indicador de Voz Génesis -->
+            <div class="panel-box">
+                <div class="section-title" style="margin-bottom: 8px;">
+                    <i class="fa-solid fa-headset"></i> Canal de Voz Génesis
+                </div>
+                <div class="voice-status">
+                    <div class="wave-animation">
+                        <div class="wave-bar"></div>
+                        <div class="wave-bar"></div>
+                        <div class="wave-bar"></div>
+                    </div>
+                    <span style="font-size: 0.8rem; color: var(--text-muted);">
+                        Sintetizador activo y sincronizado.
+                    </span>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Scripts de Conexión Flask -->
     <script>
-        async function subirArchivo() {
-            const input = document.getElementById('archivoInput');
-            const statusDiv = document.getElementById('statusSubida');
+        const consoleEl = document.getElementById('consola');
 
-            if (input.files.length === 0) {
-                statusDiv.innerText = "Por favor selecciona un archivo primero.";
-                statusDiv.style.color = "#f87171";
-                return;
+        function logConsole(msg) {
+            consoleEl.innerText = msg;
+            consoleEl.scrollTop = consoleEl.scrollHeight;
+        }
+
+        async function ejecutarMotor(claveMotor) {
+            logConsole(`>> Solicitando ejecución del motor '${claveMotor}'...`);
+
+            try {
+                const response = await fetch('/ejecutar_motor', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ motor: claveMotor })
+                });
+
+                const data = await response.json();
+                if (data.resultado) {
+                    logConsole(data.resultado);
+                } else {
+                    logConsole(`>> Respuesta insustancial del servidor.`);
+                }
+            } catch (error) {
+                logConsole(`>> Error de red o servidor: ${error.message}`);
             }
+        }
 
+        async function subirArchivo() {
+            const input = document.getElementById('inputArchivo');
+            if (!input.files || input.files.length === 0) return;
+
+            const file = input.files[0];
             const formData = new FormData();
-            formData.append('archivo', input.files[0]);
+            formData.append('archivo', file);
 
-            statusDiv.innerText = "Subiendo archivo...";
-            statusDiv.style.color = "#38bdf8";
+            document.getElementById('subiendoSpinner').style.display = 'block';
+            logConsole(`>> Subiendo '${file.name}' al servidor...`);
 
             try {
                 const response = await fetch('/subir_archivo', {
                     method: 'POST',
                     body: formData
                 });
+
                 const data = await response.json();
-                statusDiv.innerText = data.resultado || "Archivo procesado.";
-                statusDiv.style.color = "#4ade80";
+                logConsole(`>> ${data.resultado}`);
             } catch (error) {
-                statusDiv.innerText = "Error de conexión al subir el archivo.";
-                statusDiv.style.color = "#f87171";
-            }
-        }
-
-        async function ejecutarMotor() {
-            const motorSelect = document.getElementById('motorSelect').value;
-            const consola = document.getElementById('resultadoConsola');
-
-            consola.innerText = `Ejecutando [${motorSelect}], por favor espere...`;
-
-            try {
-                const response = await fetch('/ejecutar_motor', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ motor: motorSelect })
-                });
-                const data = await response.json();
-                consola.innerText = data.resultado || "Sin respuesta del motor.";
-            } catch (error) {
-                consola.innerText = "Error crítico al intentar comunicarse con el servidor para ejecutar el motor.";
+                logConsole(`>> Error al subir el archivo: ${error.message}`);
+            } finally {
+                document.getElementById('subiendoSpinner').style.display = 'none';
+                input.value = '';
             }
         }
     </script>
 </body>
+
 </html>
