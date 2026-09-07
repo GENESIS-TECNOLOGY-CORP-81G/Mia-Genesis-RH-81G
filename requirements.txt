@@ -1,3 +1,4 @@
-git add requirements.txt
-git commit -m "Corrige sintaxis en requirements.txt"
-git push origin main
+gradio[oauth,mcp]==6.26.0
+uvicorn>=0.14.0
+websockets>=10.4
+spaces
