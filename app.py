@@ -4,15 +4,16 @@
 # HUELLA DIGITAL (SHA-256): 82EA62A761CFA1B6EBA3769BC1FA91B36B8CA68A54371C4B7B6857488E298C7E
 # ==============================================================================
 
+# app.py
 import os
 import subprocess
 import sys
-from flask import Flask, send_from_directory, request, jsonify
+from flask import Flask, render_template, request, jsonify
 from werkzeug.utils import secure_filename
 from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app)
+CORS(app)  # habilita CORS para todas las rutas
 
 UPLOAD_FOLDER = '.'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -38,8 +39,7 @@ MOTORES = {
 
 @app.route('/')
 def index():
-    # Lee el index.html directamente de la raíz del proyecto sin requerir carpeta templates
-    return send_from_directory('.', 'index.html')
+    return render_template('index.html')
 
 @app.route('/subir_archivo', methods=['POST'])
 def subir_archivo():
@@ -47,16 +47,13 @@ def subir_archivo():
         return jsonify({"resultado": "Error: no se recibió el campo 'archivo'."}), 400
 
     file = request.files['archivo']
-    if file.filename == '':
-        return jsonify({"resultado": "Error: no se seleccionó ningún archivo."}), 400
-
     filename = secure_filename(file.filename)
     destino = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-
+    
     try:
         file.save(destino)
     except Exception as e:
-        return jsonify({"resultado": f"Error al guardar el archivo: {str(e)}"}), 500
+        return jsonify({"resultado": f"Error al guardar: {str(e)}"}), 500
 
     return jsonify({"resultado": f"Archivo '{filename}' guardado correctamente."})
 
@@ -70,7 +67,7 @@ def ejecutar_motor():
     script = MOTORES.get(clave_motor)
 
     if not script:
-        return jsonify({"resultado": f"Error: La clave '{clave_motor}' no está registrada."}), 400
+        return jsonify({"resultado": f"Error: La clave '{clave_motor}' no está registrada en app.py"}), 400
 
     if not os.path.exists(script):
         return jsonify({"resultado": f"Error: No existe el archivo {script} en el servidor."}), 500
