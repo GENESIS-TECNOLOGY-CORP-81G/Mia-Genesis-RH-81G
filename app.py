@@ -18,6 +18,7 @@ CORS(app)  # Habilita CORS para todas las rutas
 UPLOAD_FOLDER = '.'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
+# Diccionario mapeado con todos los motores (cálculos + voz)
 MOTORES = {
     'actualizacion_fiscal': 'motor_actualizacion_fiscal.py',
     'actualizacion_imss': 'motor_actualizacion_imss.py',
@@ -79,7 +80,7 @@ def ejecutar_motor():
         
     try:
         cabecera = f">> Ejecutando script de motor: {script}\n"
-        # Usamos sys.executable para ejecutar con el interprete de Python activo en el Space
+        # Usamos sys.executable para garantizar la ejecución con la versión de Python del entorno activo
         result = subprocess.run(
             [sys.executable, script],
             capture_output=True,
