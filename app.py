@@ -36,10 +36,6 @@ MAPEO_MOTORES = {
 }
 
 def ejecutar_motor_dinamico(nombre_motor, archivo_entrada=None):
-    """
-    Ejecuta el archivo .py correspondiente al motor seleccionado
-    garantizando que la ruta raíz sea detectada correctamente.
-    """
     if nombre_motor not in MAPEO_MOTORES:
         return f"[ERROR] El motor '{nombre_motor}' no está registrado en el sistema.", None
 
@@ -47,18 +43,15 @@ def ejecutar_motor_dinamico(nombre_motor, archivo_entrada=None):
     ruta_script = os.path.join(os.path.dirname(__file__), script_nombre)
 
     if not os.path.exists(ruta_script):
-        # Fallback para buscar directamente en el directorio actual de ejecución
         ruta_script = script_nombre
         if not os.path.exists(ruta_script):
             return f"[ERROR 404] El archivo '{script_nombre}' no existe en la raíz del repositorio.", None
 
     try:
-        # Carga dinámica del módulo Python sin importar subcarpetas
         spec = importlib.util.spec_from_file_location("modulo_motor", ruta_script)
         modulo = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(modulo)
 
-        # Si el módulo tiene una función ejecutable principal la llama
         if hasattr(modulo, "ejecutar"):
             resultado = modulo.ejecutar(archivo_entrada)
         elif hasattr(modulo, "main"):
@@ -66,10 +59,8 @@ def ejecutar_motor_dinamico(nombre_motor, archivo_entrada=None):
         else:
             resultado = f">> Motor '{nombre_motor}' ({script_nombre}) cargado e inicializado correctamente."
 
-        # Verificar si hay salida de audio generada para el canal de voz
         audio_salida = None
         if "Voz" in nombre_motor or "prueba" in script_nombre.lower():
-            # Busca el archivo de audio Victoria guardado en la raíz
             archivos_audio = [f for f in os.listdir(".") if f.startswith("10_agente_hf_victoria") and f.endswith(".wav")]
             if archivos_audio:
                 audio_salida = archivos_audio[0]
@@ -80,11 +71,12 @@ def ejecutar_motor_dinamico(nombre_motor, archivo_entrada=None):
         return f"[EXCEPCIÓN EN MOTOR {nombre_motor}]: {str(e)}", None
 
 # ------------------------------------------
-# CONTRUCCIÓN DE INTERFAZ DE GRADIO
+# CONSTRUCCIÓN DE INTERFAZ DE GRADIO
 # ------------------------------------------
 with gr.Blocks(title=f"{NOMBRE_AGENTE} - {NOMBRE_ORGANIZACION}") as demo:
-    gr.Markdown(f"# AUTORÍA PROTEGIDA: Felipe de Jesús López Vázquez | Director de Operaciones 2026")
-    gr.Markdown(f"### Sistema Central: **{NOMBRE_AGENTE}** ({NOMBRE_ORGANIZACION})")
+    # Encabezado corporativo limpio (Sin nombres arriba)
+    gr.Markdown(f"# **{NOMBRE_AGENTE}**")
+    gr.Markdown(f"### Sistema Integrado de Gestión RH & Motores Fiscales | **{NOMBRE_ORGANIZACION}**")
 
     with gr.Row():
         with gr.Column(scale=2):
@@ -122,7 +114,14 @@ with gr.Blocks(title=f"{NOMBRE_AGENTE} - {NOMBRE_ORGANIZACION}") as demo:
             gr.Markdown("### Canal de Voz Génesis")
             salida_audio = gr.Audio(label="Sintetizador activo y sincronizado", type="filepath")
 
-    # Enlace de eventos de botones a la función central
+    # Pie de página discreto abajo
+    gr.Markdown("---")
+    gr.Markdown(
+        f"<p style='text-align: center; color: #888; font-size: 0.85em;'>"
+        f"Un producto de <b>Genesis Technology Corp 81G</b> | Todos los derechos reservados."
+        f"</p>"
+    )
+
     todos_los_botones = [
         btn_voz_central, btn_orquestador, btn_prueba_voz,
         btn_nomina, btn_fiscal, btn_finiquitos, btn_vacaciones,
