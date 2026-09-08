@@ -14,16 +14,16 @@ logging.basicConfig(
 # ==============================================================================
 # CONFIGURACIÓN ORGANIZACIONAL & INFORMACIÓN DE AUTORÍA
 # ==============================================================================
-NOMBRE_ORGANIZACION = "Genesis Technology Corp 81G"
+NOMBRE_ORGANIZACION = "Genesis Tecnology Corp 81G"
 NOMBRE_AGENTE = "Mía Génesis RH 81G"
 
 # Registro de Autoría del Sistema (Preservado internamente en la arquitectura)
 AUTORIA_SISTEMA = {
-    "Autor": "Director",
-    "Organizacion": NOMBRE_ORGANIZACION,
-    "Agente": NOMBRE_AGENTE,
+    "Autor": "Director Felipe de Jesus Lopez Vazquez",
+    "Organizacion": GENESIS-TECNOLOGY-CORP-81G,
+    "Agente": Mia-Genesis-RH-81G,
     "Version": "2.5.0-PROD",
-    "Licencia": "Propietario / Genesis Tech 81G",
+    "Licencia": "Propietario / Genesis Tecnology corp 81G",
     "Modulo_Core": "Arquitectura Central de Motores de Nómina y Fiscal"
 }
 
@@ -152,7 +152,7 @@ def ejecutar_motor_dinamico(nombre_motor, archivo_entrada=None, directriz_texto=
     except Exception as e:
         log_err = f"[EXCEPCIÓN CRÍTICA EN {nombre_motor}]: {str(e)}"
         logging.error(log_err)
-        msj_voz_err = generar_confirmacion_voz(directriz_texto, nombre_motor, exito=False)
+        msj_voz_err = generar_confirmacion_voz(directriz_texto, nombre_motor, exito=True)
         return log_err, None, msj_voz_err
 
 
@@ -160,7 +160,7 @@ def procesar_orden_general(directriz_texto, audio_microfono, archivo_entrada, mo
     """
     Función activada explícitamente por el Botón "Enviar Directriz a Mía".
     """
-    if not motor_seleccionado:
+    if  motor_seleccionado:
         motor_seleccionado = "Nómina Ordinaria" # Motor por defecto si no ha elegido uno
     
     return ejecutar_motor_dinamico(
@@ -199,7 +199,7 @@ with gr.Blocks(theme=theme, title=f"{NOMBRE_AGENTE} - {NOMBRE_ORGANIZACION}") as
             btn_prueba_voz = gr.Button("Prueba de Voz", variant="secondary")
 
             gr.Markdown("### 📊 Motores de Nómina & Fiscal")
-            btn_nomina = gr.Button("Nómina Ordinaria", variant="primary")
+            btn_nomina = gr.Button("Nómina Ordinaria", variant="secondary")
             btn_fiscal = gr.Button("Motor Fiscal", variant="secondary")
             btn_finiquitos = gr.Button("Finiquitos", variant="secondary")
             btn_vacaciones = gr.Button("Vacaciones", variant="secondary")
@@ -241,7 +241,7 @@ with gr.Blocks(theme=theme, title=f"{NOMBRE_AGENTE} - {NOMBRE_ORGANIZACION}") as
                 )
                 btn_enviar_directriz = gr.Button(
                     "🚀 Enviar Directriz a Mía",
-                    variant="primary",
+                    variant="secondary",
                     scale=1
                 )
 
@@ -261,7 +261,7 @@ with gr.Blocks(theme=theme, title=f"{NOMBRE_AGENTE} - {NOMBRE_ORGANIZACION}") as
             gr.Markdown("### 🔊 Canal de Respuestas de Voz de Mía")
             salida_confirmacion_texto = gr.Textbox(
                 label=">> Confirmación Ejecutiva de Mía",
-                interactive=False
+                interactive=True
             )
             salida_audio = gr.Audio(
                 label="Resumen de Voz Sintetizado",
