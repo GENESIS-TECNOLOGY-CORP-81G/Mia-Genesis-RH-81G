@@ -1,104 +1,141 @@
-# ==============================================================================
-# AUTORÍA PROTEGIDA: Felipe de Jesús López Vázquez
-# ROLES / VARIABLES: Director de Operaciones 2026 | Arquitecto | Fantasma | El Origen
-# HUELLA DIGITAL (SHA-256): 82EA62A761CFA1B6EBA3769BC1FA91B36B8CA68A54371C4B7B68574888
-# ==============================================================================
-
-# app.py
 import os
-import subprocess
 import sys
-from flask import Flask, render_template, request, jsonify
-from werkzeug.utils import secure_filename
-from flask_cors import CORS
+import importlib.util
+import gradio as gr
 
-app = Flask(__name__)
-CORS(app)  # Habilita CORS para todas las rutas
+# ==========================================
+# CONFIGURACIÓN ORGANIZACIONAL & AGENTE
+# Genesis Technology Corp 81G
+# ==========================================
+NOMBRE_ORGANIZACION = "Genesis Technology Corp 81G"
+NOMBRE_AGENTE = "Mía Génesis RH 81G"
 
-UPLOAD_FOLDER = '.'
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+# Cargar token de Hugging Face para InferenceClient
+HF_TOKEN = os.getenv("HF_TOKEN", "")
 
-# Diccionario mapeado con todos los motores (cálculos + voz)
-MOTORES = {
-    'actualizacion_fiscal': 'motor_actualizacion_fiscal.py',
-    'actualizacion_imss': 'motor_actualizacion_imss.py',
-    'asistencia': 'motor_asistencia.py',
-    'documental': 'motor_documental.py',
-    'documental_completo': 'motor_documental_completo.py',
-    'finiquitos': 'motor_finiquitos.py',
-    'fiscal': 'motor_fiscal.py',
-    'fonacot': 'motor_fonacot.py',
-    'imss_infonavit': 'motor_imss_infonavit.py',
-    'incapacidades': 'motor_incapacidades.py',
-    'infonavit': 'motor_infonavit.py',
-    'nomina_ordinaria': 'motor_nomina_ordinaria.py',
-    'pension_alimenticia': 'motor_pension_alimenticia.py',
-    'vacaciones': 'motor_vacaciones.py',
-    'vales': 'motor_vales.py',
-    'nucleo_central': 'nucleo_central.py',
-    # --- MOTORES DE VOZ INTEGRADOS ---
-    'nucleo_central_voz': 'nucleo_central_voz.py',
-    'orquestador_voz': 'orquestador_voz.py',
-    'prueba_voz': 'prueba_voz.py',
-    'descarga_voz': 'descarga_voz.py'
+# ------------------------------------------
+# MAPEO DINÁMICO DE MOTORES DE NÓMINA Y FISCAL
+# ------------------------------------------
+MAPEO_MOTORES = {
+    "Núcleo Voz Génesis": "orquestador_voz.py",
+    "Orquestador Voz": "orquestador_voz.py",
+    "Prueba de Voz": "prueba_voz.py",
+    "Nómina Ordinaria": "motor_nomina_ordinaria.py",
+    "Motor Fiscal": "motor_fiscal.py",
+    "Finiquitos": "motor_finiquitos.py",
+    "Vacaciones": "motor_vacaciones.py",
+    "Pensión Alimenticia": "motor_pension_alimenticia.py",
+    "Vales de Despensa": "motor_vales.py",
+    "Asistencia": "motor_asistencia.py",
+    "IMSS & Infonavit": "motor_imss_infonavit.py",
+    "Incapacidades": "motor_incapacidades.py",
+    "Fonacot": "motor_fonacot.py",
+    "Núcleo Central": "nucleo_central.py",
+    "Motor Documental": "motor_documental.py",
+    "Documental Completo": "motor_documental_completo.py"
 }
 
-@app.route('/')
-def index():
-    return render_template('index.html')
+def ejecutar_motor_dinamico(nombre_motor, archivo_entrada=None):
+    """
+    Ejecuta el archivo .py correspondiente al motor seleccionado
+    garantizando que la ruta raíz sea detectada correctamente.
+    """
+    if nombre_motor not in MAPEO_MOTORES:
+        return f"[ERROR] El motor '{nombre_motor}' no está registrado en el sistema.", None
 
-@app.route('/subir_archivo', methods=['POST'])
-def subir_archivo():
-    if 'archivo' not in request.files:
-        return jsonify({'resultado': "Error: no se recibió el campo 'archivo'."}), 400
-    
-    file = request.files['archivo']
-    filename = secure_filename(file.filename)
-    destino = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-    
+    script_nombre = MAPEO_MOTORES[nombre_motor]
+    ruta_script = os.path.join(os.path.dirname(__file__), script_nombre)
+
+    if not os.path.exists(ruta_script):
+        # Fallback para buscar directamente en el directorio actual de ejecución
+        ruta_script = script_nombre
+        if not os.path.exists(ruta_script):
+            return f"[ERROR 404] El archivo '{script_nombre}' no existe en la raíz del repositorio.", None
+
     try:
-        file.save(destino)
+        # Carga dinámica del módulo Python sin importar subcarpetas
+        spec = importlib.util.spec_from_file_location("modulo_motor", ruta_script)
+        modulo = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(modulo)
+
+        # Si el módulo tiene una función ejecutable principal la llama
+        if hasattr(modulo, "ejecutar"):
+            resultado = modulo.ejecutar(archivo_entrada)
+        elif hasattr(modulo, "main"):
+            resultado = modulo.main()
+        else:
+            resultado = f">> Motor '{nombre_motor}' ({script_nombre}) cargado e inicializado correctamente."
+
+        # Verificar si hay salida de audio generada para el canal de voz
+        audio_salida = None
+        if "Voz" in nombre_motor or "prueba" in script_nombre.lower():
+            # Busca el archivo de audio Victoria guardado en la raíz
+            archivos_audio = [f for f in os.listdir(".") if f.startswith("10_agente_hf_victoria") and f.endswith(".wav")]
+            if archivos_audio:
+                audio_salida = archivos_audio[0]
+
+        return f">> [{NOMBRE_AGENTE}]: {resultado}", audio_salida
+
     except Exception as e:
-        return jsonify({'resultado': f"Error al guardar: {str(e)}"}), 500
-        
-    return jsonify({'resultado': f"Archivo '{filename}' guardado correctamente."})
+        return f"[EXCEPCIÓN EN MOTOR {nombre_motor}]: {str(e)}", None
 
-@app.route('/ejecutar_motor', methods=['POST'])
-def ejecutar_motor():
-    data = request.get_json(silent=True)
-    if not data or 'motor' not in data:
-        return jsonify({'resultado': "Error: No se especificó el motor."}), 400
-        
-    clave_motor = data.get('motor')
-    script = MOTORES.get(clave_motor)
-    
-    if not script:
-        return jsonify({'resultado': f"Error: La clave '{clave_motor}' no está registrada en app.py"}), 400
-        
-    if not os.path.exists(script):
-        return jsonify({'resultado': f"Error: No existe el archivo {script} en el servidor."}), 500
-        
-    try:
-        cabecera = f">> Ejecutando script de motor: {script}\n"
-        # Usamos sys.executable para garantizar la ejecución con la versión de Python del entorno activo
-        result = subprocess.run(
-            [sys.executable, script],
-            capture_output=True,
-            text=True,
-            timeout=300
-        )
-        
-        output = result.stdout.strip() or result.stderr.strip()
-        if not output:
-            output = "El motor se ejecutó correctamente sin texto de salida."
+# ------------------------------------------
+# CONTRUCCIÓN DE INTERFAZ DE GRADIO
+# ------------------------------------------
+with gr.Blocks(title=f"{NOMBRE_AGENTE} - {NOMBRE_ORGANIZACION}") as demo:
+    gr.Markdown(f"# AUTORÍA PROTEGIDA: Felipe de Jesús López Vázquez | Director de Operaciones 2026")
+    gr.Markdown(f"### Sistema Central: **{NOMBRE_AGENTE}** ({NOMBRE_ORGANIZACION})")
+
+    with gr.Row():
+        with gr.Column(scale=2):
+            gr.Markdown("### Módulos de Voz & Génesis (TTS)")
+            btn_voz_central = gr.Button("Núcleo Voz Génesis")
+            btn_orquestador = gr.Button("Orquestador Voz")
+            btn_prueba_voz = gr.Button("Prueba de Voz")
+
+            gr.Markdown("### Motores de Nómina & Fiscal")
+            btn_nomina = gr.Button("Nómina Ordinaria")
+            btn_fiscal = gr.Button("Motor Fiscal")
+            btn_finiquitos = gr.Button("Finiquitos")
+            btn_vacaciones = gr.Button("Vacaciones")
+            btn_pension = gr.Button("Pensión Alimenticia")
+            btn_vales = gr.Button("Vales de Despensa")
+
+            gr.Markdown("### Asistencia, IMSS & Créditos")
+            btn_asistencia = gr.Button("Asistencia")
+            btn_imss = gr.Button("IMSS & Infonavit")
+            btn_incapacidades = gr.Button("Incapacidades")
+            btn_fonacot = gr.Button("Fonacot")
+
+            gr.Markdown("### Documental & Núcleo Central")
+            btn_nucleo = gr.Button("Núcleo Central")
+            btn_doc = gr.Button("Motor Documental")
+            btn_doc_completo = gr.Button("Documental Completo")
+
+        with gr.Column(scale=3):
+            gr.Markdown("### Cargar Archivo de Datos")
+            input_file = gr.File(label="Haz clic o arrastra un archivo (.csv, .xlsx, .txt)")
             
-        return jsonify({'resultado': cabecera + output})
-        
-    except subprocess.TimeoutExpired:
-        return jsonify({'resultado': "Error: la ejecución del motor excedió el tiempo máximo (timeout)."}), 504
-    except Exception as e:
-        return jsonify({'resultado': f"Error al ejecutar: {str(e)}"}), 500
+            gr.Markdown("### Terminal de Salida")
+            salida_consola = gr.Textbox(lines=10, label=">> Consola Lista", value="Selecciona un motor para ejecutar...")
+            
+            gr.Markdown("### Canal de Voz Génesis")
+            salida_audio = gr.Audio(label="Sintetizador activo y sincronizado", type="filepath")
 
-if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 7860))
-    app.run(host='0.0.0.0', port=port)
+    # Enlace de eventos de botones a la función central
+    todos_los_botones = [
+        btn_voz_central, btn_orquestador, btn_prueba_voz,
+        btn_nomina, btn_fiscal, btn_finiquitos, btn_vacaciones,
+        btn_pension, btn_vales, btn_asistencia, btn_imss,
+        btn_incapacidades, btn_fonacot, btn_nucleo, btn_doc, btn_doc_completo
+    ]
+
+    for btn in todos_los_botones:
+        btn.click(
+            fn=lambda nombre=btn.value, f=input_file: ejecutar_motor_dinamico(nombre, f),
+            inputs=[input_file],
+            outputs=[salida_consola, salida_audio]
+        )
+
+if __name__ == "__main__":
+    demo.launch()
