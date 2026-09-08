@@ -36,6 +36,10 @@ MAPEO_MOTORES = {
 }
 
 def ejecutar_motor_dinamico(nombre_motor, archivo_entrada=None):
+    """
+    Ejecuta el archivo .py correspondiente al motor seleccionado
+    garantizando que la ruta raíz sea detectada correctamente.
+    """
     if nombre_motor not in MAPEO_MOTORES:
         return f"[ERROR] El motor '{nombre_motor}' no está registrado en el sistema.", None
 
@@ -52,8 +56,11 @@ def ejecutar_motor_dinamico(nombre_motor, archivo_entrada=None):
         modulo = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(modulo)
 
+        # Lógica de ejecución según archivo de entrada
+        ruta_archivo = archivo_entrada.name if hasattr(archivo_entrada, 'name') else archivo_entrada
+
         if hasattr(modulo, "ejecutar"):
-            resultado = modulo.ejecutar(archivo_entrada)
+            resultado = modulo.ejecutar(ruta_archivo)
         elif hasattr(modulo, "main"):
             resultado = modulo.main()
         else:
@@ -74,7 +81,6 @@ def ejecutar_motor_dinamico(nombre_motor, archivo_entrada=None):
 # CONSTRUCCIÓN DE INTERFAZ DE GRADIO
 # ------------------------------------------
 with gr.Blocks(title=f"{NOMBRE_AGENTE} - {NOMBRE_ORGANIZACION}") as demo:
-    # Encabezado corporativo limpio (Sin nombres arriba)
     gr.Markdown(f"# **{NOMBRE_AGENTE}**")
     gr.Markdown(f"### Sistema Integrado de Gestión RH & Motores Fiscales | **{NOMBRE_ORGANIZACION}**")
 
@@ -114,7 +120,7 @@ with gr.Blocks(title=f"{NOMBRE_AGENTE} - {NOMBRE_ORGANIZACION}") as demo:
             gr.Markdown("### Canal de Voz Génesis")
             salida_audio = gr.Audio(label="Sintetizador activo y sincronizado", type="filepath")
 
-    # Pie de página discreto abajo
+    # Pie de página
     gr.Markdown("---")
     gr.Markdown(
         f"<p style='text-align: center; color: #888; font-size: 0.85em;'>"
@@ -122,16 +128,30 @@ with gr.Blocks(title=f"{NOMBRE_AGENTE} - {NOMBRE_ORGANIZACION}") as demo:
         f"</p>"
     )
 
-    todos_los_botones = [
-        btn_voz_central, btn_orquestador, btn_prueba_voz,
-        btn_nomina, btn_fiscal, btn_finiquitos, btn_vacaciones,
-        btn_pension, btn_vales, btn_asistencia, btn_imss,
-        btn_incapacidades, btn_fonacot, btn_nucleo, btn_doc, btn_doc_completo
-    ]
+    # Diccionario explícito de botones a nombres de motor
+    mapa_botones = {
+        btn_voz_central: "Núcleo Voz Génesis",
+        btn_orquestador: "Orquestador Voz",
+        btn_prueba_voz: "Prueba de Voz",
+        btn_nomina: "Nómina Ordinaria",
+        btn_fiscal: "Motor Fiscal",
+        btn_finiquitos: "Finiquitos",
+        btn_vacaciones: "Vacaciones",
+        btn_pension: "Pensión Alimenticia",
+        btn_vales: "Vales de Despensa",
+        btn_asistencia: "Asistencia",
+        btn_imss: "IMSS & Infonavit",
+        btn_incapacidades: "Incapacidades",
+        btn_fonacot: "Fonacot",
+        btn_nucleo: "Núcleo Central",
+        btn_doc: "Motor Documental",
+        btn_doc_completo: "Documental Completo"
+    }
 
-    for btn in todos_los_botones:
-        btn.click(
-            fn=lambda nombre=btn.value, f=input_file: ejecutar_motor_dinamico(nombre, f),
+    # Asignación correcta de eventos fijando la variable del nombre
+    for boton, nombre in mapa_botones.items():
+        boton.click(
+            fn=lambda f, n=nombre: ejecutar_motor_dinamico(n, f),
             inputs=[input_file],
             outputs=[salida_consola, salida_audio]
         )
